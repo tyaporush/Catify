@@ -5,8 +5,8 @@ Cat Heaven: Your Ultimate Feline Photo Collection - Discover the cutest, funnies
 Here is a short video demonstrating the features of Catify:
 
 <p align="center">
-  <a href="https://github.com/tyaporush/catify/blob/main/videos/demo.mp4" target="_blank">
-    <img src="https://path-to-thumbnail-image.com/thumbnail.jpg" alt="Watch the video" width="600" />
+  <a href="https://github.com/tyaporush/catify/blob/main/videos/catify.mp4" target="_blank">
+    <img src="https://github.com/tyaporush/catify/blob/main/images/catify.jpeg" alt="Watch the video" width="600" />
   </a>
 </p>
 
