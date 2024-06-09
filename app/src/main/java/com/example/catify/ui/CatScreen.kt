@@ -1,5 +1,14 @@
 package com.example.catify.ui
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -19,10 +28,18 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -39,36 +56,119 @@ import coil.request.ImageRequest
 import com.example.catify.R
 import com.example.catify.model.CatUIModel
 import com.example.catify.model.ImageSize
+import com.example.catify.utility.detectPinchGestures
 import com.example.catify.viewmodel.HomeViewModel
 import kotlinx.coroutines.Dispatchers
 
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun CatScreen(
     modifier: Modifier = Modifier,
     vm: HomeViewModel
 ) {
     val catPagingData = vm.homeScreenState.collectAsLazyPagingItems()
+    var level by remember { mutableStateOf(1) }
 
-    CatsList(
-        modifier = modifier,
-        lazyPagingItems = catPagingData
-    )
+    AnimatedVisibility(
+        visible = level == 0,
+        enter = scaleIn() + fadeIn(),
+        exit = scaleOut() + fadeOut()
+    ) {
+        CatsList(
+            modifier = modifier,
+            lazyPagingItems = catPagingData,
+            columns = 1,
+            nextLevel = 1,
+            previousLevel = 0
+        ) {
+            level = it
+        }
+    }
+
+    AnimatedVisibility(
+        visible = level == 1,
+        enter = scaleIn() + fadeIn(),
+        exit = scaleOut() + fadeOut()
+    ) {
+        CatsList(
+            modifier = modifier,
+            lazyPagingItems = catPagingData,
+            columns = 2,
+            nextLevel = 2,
+            previousLevel = 0
+        ) {
+            level = it
+        }
+    }
+
+    AnimatedVisibility(
+        visible = level == 2,
+        enter = scaleIn() + fadeIn(),
+        exit = scaleOut() + fadeOut()
+    ) {
+        CatsList(
+            modifier = modifier,
+            lazyPagingItems = catPagingData,
+            columns = 3,
+            nextLevel = 2,
+            previousLevel = 1
+        ) {
+            level = it
+        }
+    }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CatsList(
     modifier: Modifier = Modifier,
-    lazyPagingItems: LazyPagingItems<CatUIModel>
+    lazyPagingItems: LazyPagingItems<CatUIModel>,
+    columns: Int,
+    nextLevel: Int,
+    previousLevel: Int,
+    onZoomLevelChange: (Int) -> Unit
 ) {
+
+    var zoom by remember { mutableStateOf(1f) }
+    val zoomTransition: Float by animateFloatAsState(
+        zoom,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioLowBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "zoom"
+    )
+
     LazyVerticalStaggeredGrid(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .pointerInput(Unit) {
+                detectPinchGestures(
+                    pass = PointerEventPass.Initial,
+                    onGesture = { centroid: Offset, newZoom: Float ->
+                        val newScale = (zoom * newZoom)
+                        if (newScale > 1.25f) {
+                            onZoomLevelChange.invoke(previousLevel)
+                        } else if (newScale < 0.75f) {
+                            onZoomLevelChange.invoke(nextLevel)
+                        } else {
+                            zoom = newScale
+                        }
+                    },
+                    onGestureEnd = { zoom = 1f }
+                )
+            }
+            .graphicsLayer {
+                scaleX = zoomTransition
+                scaleY = zoomTransition
+            },
         horizontalArrangement = Arrangement.Center,
-        columns = StaggeredGridCells.Fixed(2)
+        columns = StaggeredGridCells.Fixed(columns)
     ) {
         items(
-            count = lazyPagingItems.itemCount)
+            count = lazyPagingItems.itemCount
+        )
         { index ->
             val catItem = lazyPagingItems[index]
             if (catItem != null) {
