@@ -1,6 +1,15 @@
 # Catify
 Cat Heaven: Your Ultimate Feline Photo Collection - Discover the cutest, funniest, and most heartwarming photos of cats and kittens. From playful kittens and lazy loungers to curious explorers and adorable pairs, Cat Haven brings a smile to your face with every swipe. Perfect for cat lovers of all ages!
 
+## Demo
+Here is a short video demonstrating the features of Catify:
+
+<p align="center">
+  <a href="https://github.com/tyaporush/catify/blob/main/videos/demo.mp4" target="_blank">
+    <img src="https://path-to-thumbnail-image.com/thumbnail.jpg" alt="Watch the video" width="600" />
+  </a>
+</p>
+
 
 ## Table of Contents
 
@@ -17,6 +26,7 @@ Cat Heaven: Your Ultimate Feline Photo Collection - Discover the cutest, funnies
 - Paging support for smooth scrolling through images
 - Offline support with cached data
 - Clean and modern UI
+- Pinch-to-Zoom Changes column count
 
 ## Architecture
 
